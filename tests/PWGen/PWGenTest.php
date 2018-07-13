@@ -27,12 +27,25 @@ class PWGenTest extends TestCase
         $this->assertTrue($pwgen->hasCapitalize());
     }
 
-    // TODO: add more tests for set length (<5, <2 and <1)
-    public function testSetLength()
+    public function setLengthProvider()
+    {
+        return array(
+            array(-1, 8),
+            array(4, 4),
+            array(2, 2),
+            array(1, 1),
+            array(20, 20),
+        );
+    }
+
+    /**
+     * @dataProvider setLengthProvider
+     */
+    public function testSetLength($pwdLength, $expectedLength)
     {
         $pwgen = new PWGen();
-        $pwgen->setLength(20);
-        $this->assertEquals(20, $pwgen->getLength());
+        $pwgen->setLength($pwdLength);
+        $this->assertEquals($expectedLength, $pwgen->getLength());
     }
 
     public function testSetNoVovels()
@@ -182,5 +195,33 @@ class PWGenTest extends TestCase
         $this->assertRegExp('/[' . preg_quote($pwgen->getSymbols(), '/') . ']/', $pass); // Symbols
     }
 
-    // TODO: ALL possible combinations should be tested!!!
+    public function testBlacklistSymbol()
+    {
+        $pwgen = new PWGen();
+        $pwgen->blacklistSymbol(array('@', '#', '$'));
+
+        $this->assertSame("!\"%&'()*+,-./:;<=>?[\]^_`{|}~", $pwgen->getSymbols());
+    }
+
+    public function testGetAmbiguous()
+    {
+        $pwgen = new PWGen();
+        $pwgen->setAmbiguous(true);
+
+        $this->assertSame('B8G6I1l0OQDS5Z2', $pwgen->getAmbiguous());
+    }
+
+    public function testMyRandOnInvalidRange()
+    {
+        $pwgen = new PWGen();
+
+        $this->assertFalse($pwgen->my_rand(100, 0));
+    }
+
+    public function testToString()
+    {
+        $pwgen = new PWGen();
+
+        $this->assertInternalType('string', (string) $pwgen);
+    }
 }
